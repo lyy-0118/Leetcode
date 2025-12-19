@@ -39,3 +39,21 @@
 
 # debug information files
 *.dwo
+
+# 1. 忽略 IDE 配置文件 (如果不忽略，把你的个人配置传上去，队友会很头疼)
+.vscode/
+.idea/
+.vs/
+
+# 2. 忽略构建文件夹 (很多人习惯把编译结果统一放在 build 文件夹)
+build/
+[Bb]in/
+
+# 3. 忽略操作系统生成的文件 (尤其是 Mac 用户)
+.DS_Store
+
+# 4. 如果你用 CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
