@@ -1,59 +1,82 @@
-# Prerequisites
-*.d
-
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Linker files
-*.ilk
-
-# Debugger Files
+# =========================
+# 编译产物 / Compiled Files
+# =========================
+# Windows 可执行文件
+*.exe
+*.dll
+*.lib
 *.pdb
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
+# Linux/macOS 可执行文件
 *.out
 *.app
+*.so
+*.dylib
 
-# debug information files
-*.dwo
+# 编译中间文件 (Object files)
+*.o
+*.obj
+*.d
 
-# 1. 忽略 IDE 配置文件 (如果不忽略，把你的个人配置传上去，队友会很头疼)
-.vscode/
-.idea/
-.vs/
-
-# 2. 忽略构建文件夹 (很多人习惯把编译结果统一放在 build 文件夹)
+# =========================
+# 常见的构建目录 / Build Directories
+# =========================
+# Visual Studio / C++ 常用的输出目录
+Debug/
+Release/
+x64/
+x86/
+bin/
+obj/
 build/
-[Bb]in/
 
-# 3. 忽略操作系统生成的文件 (尤其是 Mac 用户)
-.DS_Store
-
-# 4. 如果你用 CMake
+# CMake 生成的文件 (如果你使用 CMake)
 CMakeCache.txt
 CMakeFiles/
-cmake_install.cmake
+cmake-build-*/
+*.cmake
 Makefile
+
+# =========================
+# 编辑器与IDE配置 / Editor & IDE Config
+# =========================
+# VS Code
+.vscode/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.ipch
+*.aps
+
+# CLion (JetBrains)
+.idea/
+
+# Xcode
+*.xcodeproj/project.xcworkspace/xcuserdata
+*.xcuserdatad
+
+# =========================
+# 系统文件 / OS Files
+# =========================
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# =========================
+# 刷题专用 / LeetCode Specific
+# =========================
+# 本地调试用的输入输出文件
+input.txt
+output.txt
+test.txt
+*.log
+
+# 临时代码文件 (以 temp 开头或结尾的文件)
+temp.cpp
+*temp.cpp
+temp*.cpp
