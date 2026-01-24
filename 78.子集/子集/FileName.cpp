@@ -43,7 +43,6 @@ private:
         ret.push_back(path);
         //1.Ñ­»·¼ÓµÝ¹é
         for (int i = n; i < nums.size(); i++) {
-            ;
             path.push_back(nums[i]);
             dfs(nums, i + 1);
             path.pop_back();
