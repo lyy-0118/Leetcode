@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>0-1 BFS 可视化</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            background-color: #f4f7f9;
+        }
+        #container {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+        #main-viz {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        svg {
+            border: 1px solid #ccc;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .grid-rect {
+            stroke: #e0e0e0;
+            stroke-width: 1;
+            transition: fill 0.3s ease;
+        }
+        .grid-text {
+            font-size: 24px;
+            font-weight: bold;
+            pointer-events: none;
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+        .dist-text {
+            font-size: 14px;
+            fill: #888;
+            pointer-events: none;
+            text-anchor: middle;
+            dominant-baseline: central;
+            transition: fill 0.3s ease;
+        }
+        .controls, #explanation-box {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            border: 1px solid #007bff;
+            background-color: #007bff;
+            color: white;
+            margin: 0 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #explanation-box {
+            width: 500px;
+            height: 60px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #explanation {
+            font-size: 16px;
+            color: #333;
+        }
+        /* Deque Styles */
+        #deque-viz {
+            width: 120px;
+            padding-top: 50px;
+        }
+        #deque-viz h3 {
+            margin: 0 0 10px 0;
+            text-align: center;
+            color: #555;
+        }
+        .deque-container {
+            position: relative;
+            border: 2px solid #aaa;
+            border-radius: 10px;
+            padding: 10px;
+            height: 400px;
+            background: linear-gradient(to right, #e0f7fa 50%, #fffde7 50%);
+        }
+        .deque-label {
+            position: absolute;
+            font-weight: bold;
+            color: #777;
+            font-size: 14px;
+        }
+        #front-label { top: 5px; left: 10px; }
+        #back-label { top: 5px; right: 10px; }
+        .deque-item {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border: 2px solid #007bff;
+            border-radius: 50%;
+            background-color: #e3f2fd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+
+<div id="container">
+    <div id="main-viz">
+        <div id="explanation-box">
+            <p id="explanation">点击“下一步”开始 0-1 BFS 算法。</p>
+        </div>
+        <div class="controls">
+            <button id="next-step">下一步</button>
+            <button id="reset">重置</button>
+        </div>
+        <svg id="grid-svg" width="500" height="400"></svg>
+    </div>
+    <div id="deque-viz">
+        <h3>双端队列 (Deque)</h3>
+        <div class="deque-container">
+            <div id="front-label" class="deque-label"></div>
+            <div id="back-label" class="deque-label"></div>
+            <div id="deque-items-container"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SVG_NS = "http://www.w3.org/2000/svg";
+    const CELL_SIZE = 80;
+    const GRID = [
+        "起.A.",
+        ".#..",
+        ".A.#",
+        "...终"
+    ];
+    const M = GRID.length;
+    const N = GRID[0].length;
+
+    const svg = document.getElementById('grid-svg');
+    const explanationEl = document.getElementById('explanation');
+    const nextStepBtn = document.getElementById('next-step');
+    const resetBtn = document.getElementById('reset');
+    const dequeItemsContainer = document.getElementById('deque-items-container');
+
+    let simulationSteps = [];
+    let currentStep = -1;
+
+    function createSVGElement(tag, attributes) {
+        const el = document.createElementNS(SVG_NS, tag);
+        for (const key in attributes) {
+            el.setAttribute(key, attributes[key]);
+        }
+        return el;
+    }
+
+    function drawGrid() {
+        svg.innerHTML = '';
+        svg.setAttribute('width', N * CELL_SIZE);
+        svg.setAttribute('height', M * CELL_SIZE);
+
+        for (let r = 0; r < M; r++) {
+            for (let c = 0; c < N; c++) {
+                // 单元格矩形
+                const rect = createSVGElement('rect', {
+                    id: `rect-${r}-${c}`,
+                    x: c * CELL_SIZE,
+                    y: r * CELL_SIZE,
+                    width: CELL_SIZE,
+                    height: CELL_SIZE,
+                    fill: GRID[r][c] === '#' ? '#616161' : '#ffffff',
+                    class: 'grid-rect'
+                });
+                svg.appendChild(rect);
+
+                // 单元格字符
+                let char = GRID[r][c];
+                if (char !== '.' && char !== '#') {
+                    const text = createSVGElement('text', {
+                        id: `char-${r}-${c}`,
+                        x: c * CELL_SIZE + CELL_SIZE / 2,
+                        y: r * CELL_SIZE + CELL_SIZE / 2,
+                        class: 'grid-text',
+                        fill: (char === '起' || char === '终') ? '#d32f2f' : '#4a148c'
+                    });
+                    text.textContent = char;
+                    svg.appendChild(text);
+                }
+                
+                // 距离文本
+                const distText = createSVGElement('text', {
+                    id: `dist-${r}-${c}`,
+                    x: c * CELL_SIZE + CELL_SIZE / 2,
+                    y: r * CELL_SIZE + CELL_SIZE / 1.3,
+                    class: 'dist-text'
+                });
+                distText.textContent = '∞';
+                svg.appendChild(distText);
+            }
+        }
+    }
+
+    function simulateAlgorithm() {
+        const steps = [];
+        const dist = Array(M).fill(null).map(() => Array(N).fill(Infinity));
+        const teleporters = {};
+        for (let r = 0; r < M; r++) {
+            for (let c = 0; c < N; c++) {
+                if (GRID[r][c] >= 'A' && GRID[r][c] <= 'Z') {
+                    if (!teleporters[GRID[r][c]]) teleporters[GRID[r][c]] = [];
+                    teleporters[GRID[r][c]].push({r, c});
+                }
+            }
+        }
+
+        const deque = [];
+        const usedTeleporters = new Set();
+        let startR = -1, startC = -1;
+        GRID.find((row, r) => {
+            const c = row.indexOf('起');
+            if (c !== -1) {
+                startR = r;
+                startC = c;
+                return true;
+            }
+            return false;
+        });
+
+        // 初始步骤
+        dist[startR][startC] = 0;
+        deque.unshift({r: startR, c: startC});
+        steps.push({
+            type: 'INIT',
+            deque: [...deque],
+            dist: JSON.parse(JSON.stringify(dist)),
+            explanation: `算法开始。起点 (0,0) 的距离为 0。将 (0,0) 推入双端队列的队首。`
+        });
+        
+        while (deque.length > 0) {
+            const {r, c} = deque.shift();
+            const currentDist = dist[r][c];
+            
+            steps.push({
+                type: 'POP',
+                node: {r, c},
+                deque: [...deque],
+                dist: JSON.parse(JSON.stringify(dist)),
+                explanation: `从队首弹出 (${r},${c})。当前距离为 ${currentDist}。`
+            });
+            
+            if (GRID[r][c] === '终') {
+                steps.push({
+                    type: 'FINISH',
+                    node: {r, c},
+                    deque: [...deque],
+                    dist: JSON.parse(JSON.stringify(dist)),
+                    explanation: `已到达终点！最小移动步数为 ${currentDist}。`
+                });
+                return steps;
+            }
+            
+            const char = GRID[r][c];
+            // 1. 传送移动 (成本 0)
+            if (char >= 'A' && char <= 'Z' && !usedTeleporters.has(char)) {
+                usedTeleporters.add(char);
+                steps.push({
+                    type: 'TELEPORT_GROUP',
+                    letter: char,
+                    nodes: teleporters[char],
+                    deque: [...deque],
+                    dist: JSON.parse(JSON.stringify(dist)),
+                    explanation: `位于传送门 '${char}'。激活此传送门组（成本为 0）。`
+                });
+
+                for (const nextPos of teleporters[char]) {
+                    if (dist[nextPos.r][nextPos.c] > currentDist) {
+                        dist[nextPos.r][nextPos.c] = currentDist;
+                        deque.unshift(nextPos);
+                        steps.push({
+                            type: 'PUSH_FRONT',
+                            node: nextPos,
+                            from: {r,c},
+                            deque: [...deque],
+                            dist: JSON.parse(JSON.stringify(dist)),
+                            explanation: `传送到 (${nextPos.r},${nextPos.c})。新距离为 ${currentDist}。推入双端队列的【队首】。`
+                        });
+                    }
+                }
+            }
+
+            // 2. 普通移动 (成本 1)
+            const moves = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+            steps.push({
+                type: 'EXPLORE_NEIGHBORS',
+                node: {r, c},
+                deque: [...deque],
+                dist: JSON.parse(JSON.stringify(dist)),
+                explanation: `探索 (${r},${c}) 的相邻节点（成本 +1）。`
+            });
+
+            for (const [dr, dc] of moves) {
+                const nr = r + dr;
+                const nc = c + dc;
+
+                if (nr >= 0 && nr < M && nc >= 0 && nc < N && GRID[nr][nc] !== '#') {
+                    if (dist[nr][nc] > currentDist + 1) {
+                        dist[nr][nc] = currentDist + 1;
+                        deque.push({r: nr, c: nc});
+                        steps.push({
+                            type: 'PUSH_BACK',
+                            node: {r: nr, c: nc},
+                            from: {r,c},
+                            deque: [...deque],
+                            dist: JSON.parse(JSON.stringify(dist)),
+                            explanation: `移动到 (${nr},${nc})。新距离为 ${currentDist + 1}。推入双端队列的【队尾】。`
+                        });
+                    }
+                }
+            }
+        }
+        
+        steps.push({type: 'FAIL', explanation: '无法找到通往终点的路径。'});
+        return steps;
+    }
+
+    function renderStep(stepIndex) {
+        if (stepIndex < 0 || stepIndex >= simulationSteps.length) {
+            return;
+        }
+        
+        // 重置所有视觉样式
+        for (let r = 0; r < M; r++) {
+            for (let c = 0; c < N; c++) {
+                const rect = document.getElementById(`rect-${r}-${c}`);
+                rect.style.fill = GRID[r][c] === '#' ? '#616161' : '#ffffff';
+                rect.style.stroke = "#e0e0e0";
+                
+                const distText = document.getElementById(`dist-${r}-${c}`);
+                const distVal = simulationSteps[stepIndex].dist[r][c];
+                distText.textContent = distVal === Infinity ? '∞' : distVal;
+                distText.style.fill = distVal === Infinity ? '#aaa' : '#1e88e5';
+            }
+        }
+        
+        const step = simulationSteps[stepIndex];
+        explanationEl.textContent = step.explanation;
+        
+        // 根据操作高亮显示
+        if (step.type === 'POP' || step.type === 'EXPLORE_NEIGHBORS') {
+            const { r, c } = step.node;
+            document.getElementById(`rect-${r}-${c}`).style.fill = '#ffeb3b'; // 黄色: 当前正在处理
+        }
+        if (step.type === 'PUSH_FRONT' || step.type === 'PUSH_BACK') {
+            const { r: fr, c: fc } = step.from;
+            const { r: tr, c: tc } = step.node;
+            document.getElementById(`rect-${fr}-${fc}`).style.fill = '#ffeb3b';
+            document.getElementById(`rect-${tr}-${tc}`).style.fill = '#c8e6c9'; // 绿色: 新加入的节点
+            document.getElementById(`rect-${tr}-${tc}`).style.stroke = '#4caf50';
+        }
+        if (step.type === 'TELEPORT_GROUP') {
+             step.nodes.forEach(({r, c}) => {
+                document.getElementById(`rect-${r}-${c}`).style.fill = '#e1bee7'; // 紫色: 传送门组
+             });
+        }
+        if (step.type === 'FINISH') {
+            const { r, c } = step.node;
+            document.getElementById(`rect-${r}-${c}`).style.fill = '#a5d6a7';
+        }
+
+        // 渲染双端队列
+        dequeItemsContainer.innerHTML = '';
+        step.deque.forEach((item, i) => {
+            const el = document.createElement('div');
+            el.className = 'deque-item';
+            el.textContent = `(${item.r},${item.c})`;
+            el.style.left = `calc(50% - 25px)`;
+            el.style.top = `${30 + i * 60}px`;
+            dequeItemsContainer.appendChild(el);
+        });
+
+        nextStepBtn.disabled = (currentStep >= simulationSteps.length - 1);
+    }
+    
+    function initialize() {
+        drawGrid();
+        simulationSteps = simulateAlgorithm();
+        currentStep = 0;
+        renderStep(0);
+    }
+
+    nextStepBtn.addEventListener('click', () => {
+        if (currentStep < simulationSteps.length - 1) {
+            currentStep++;
+            renderStep(currentStep);
+        }
+    });
+
+
+
+    resetBtn.addEventListener('click', () => {
+        currentStep = -1;
+        explanationEl.textContent = '点击“下一步”开始 0-1 BFS 算法。';
+        dequeItemsContainer.innerHTML = '';
+        initialize();
+    });
+
+    // 启动应用
+    initialize();
+</script>
+
+</body>
+</html>
