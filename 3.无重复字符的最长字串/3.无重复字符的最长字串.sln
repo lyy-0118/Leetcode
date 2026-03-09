@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36310.24 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3.无重复字符的最长字串", "3.无重复字符的最长字串\3.无重复字符的最长字串.vcxproj", "{55F287DC-2357-4A87-BB8B-54D815FC5F33}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{55F287DC-2357-4A87-BB8B-54D815FC5F33}.Debug|x64.ActiveCfg = Debug|x64
+		{55F287DC-2357-4A87-BB8B-54D815FC5F33}.Debug|x64.Build.0 = Debug|x64
+		{55F287DC-2357-4A87-BB8B-54D815FC5F33}.Debug|x86.ActiveCfg = Debug|Win32
+		{55F287DC-2357-4A87-BB8B-54D815FC5F33}.Debug|x86.Build.0 = Debug|Win32
+		{55F287DC-2357-4A87-BB8B-54D815FC5F33}.Release|x64.ActiveCfg = Release|x64
+		{55F287DC-2357-4A87-BB8B-54D815FC5F33}.Release|x64.Build.0 = Release|x64
+		{55F287DC-2357-4A87-BB8B-54D815FC5F33}.Release|x86.ActiveCfg = Release|Win32
+		{55F287DC-2357-4A87-BB8B-54D815FC5F33}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4F82C1A2-5879-42F2-84A2-88BB8EFD71F2}
+	EndGlobalSection
+EndGlobal
