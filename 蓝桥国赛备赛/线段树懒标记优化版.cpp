@@ -41,7 +41,7 @@ void pushDown(int node, int l, int r) {
     tree[right] += lazy[node] * (r - mid);
     lazy[right] += lazy[node];
 
-    // 清空当前节点的懒标记
+    // 清空当前节点的懒标记 懒标记已经下发了，当前节点不再欠账。
     lazy[node] = 0;
 }
 
@@ -49,10 +49,11 @@ void pushDown(int node, int l, int r) {
 void update(int node, int l, int r, int ql, int qr, long long val) {
     if (ql <= l && r <= qr) {
         tree[node] += val * (r - l + 1);
-        lazy[node] += val;
+        lazy[node] += val;      //如果当前区间被完整覆盖，直接打懒标记：
         return;
     }
-
+	//当前节点可能以前被打过懒标记
+	//先下传 再递归修改左右子树
     pushDown(node, l, r);
 
     int mid = (l + r) / 2;
