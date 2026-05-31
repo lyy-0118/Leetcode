@@ -2,6 +2,7 @@
 using namespace std;
 typedef long long ll;
 
+//比较函数
 bool cmp(pair<int,int> x,pair<int,int> y) {
 	return x.first+x.second<y.first+y.second;
 }
