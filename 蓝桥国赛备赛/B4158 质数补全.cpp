@@ -10,7 +10,7 @@ typedef long long ll;
 void InitPrime(){
 	isPrime[0] = isPrime[1] = false;
 	for (int i = 2;(ll)i * i <= MAXN; i++){
-		if(isPrime[i]){
+		if(isPrime[i]){ //一个质数的倍数一定不是质数
 			for(ll j=(ll)i*i;j<=MAXN;j+=i){
 				isPrime[j]=false;
 			}
