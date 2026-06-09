@@ -43,7 +43,7 @@ void dfs(int row){
     }
 }
 int main(){
-    	cin>>n;
+    cin>>n;
 	// 下标从 1 开始更方便
     path.resize(n + 1);
     // 列编号最大到 n
